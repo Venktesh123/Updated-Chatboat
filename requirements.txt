@@ -1,0 +1,26 @@
+# === Flask Backend ===
+flask==3.0.2
+flask-cors==4.0.0
+gunicorn==21.2.0
+python-dotenv==1.0.1
+gevent>=1.4
+
+# === LangChain Core & Extensions ===
+langchain>=0.2.1
+langchain-core>=0.3.52,<0.4.0
+langchain-community>=0.2.1
+langchain-google-genai==2.1.4
+langchain-groq>=0.0.1
+
+# === Vector DBs & Embeddings ===
+chromadb>=0.4.22
+faiss-cpu
+sentence-transformers
+
+# === Other Utilities ===
+protobuf<4.0.0
+pyprojroot
+
+# === Optional Visualization (for demos/logs) ===
+matplotlib
+seaborn

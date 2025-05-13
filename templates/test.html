@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dhamm AI Chatbot API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        button { margin: 5px; padding: 10px; }
+        #response { white-space: pre-wrap; margin-top: 20px; border: 1px solid #ccc; padding: 10px; min-height: 300px; }
+        .error { color: red; }
+        .success { color: green; }
+        h1 { color: #333; }
+        .button-group { margin-bottom: 20px; }
+        .clear-button { float: right; background-color: #f8f8f8; }
+    </style>
+</head>
+<body>
+    <h1>Dhamm AI Chatbot API Test</h1>
+    
+    <div class="button-group">
+        <button onclick="healthCheck()">Health Check</button>
+        <button onclick="testChatAPI()">Test Chat</button>
+        <button onclick="clearConversation()">Clear Conversation</button>
+        <button onclick="toggleChunks(true)">Show Chunks</button>
+        <button onclick="toggleChunks(false)">Hide Chunks</button>
+        <button onclick="runConversationDemo()">Run Demo Conversation</button>
+        <button onclick="clearOutput()" class="clear-button">Clear Output</button>
+    </div>
+
+    <div>
+        <h3>Custom Question:</h3>
+        <input type="text" id="questionInput" placeholder="Type your question here..." style="width: 70%; padding: 8px;">
+        <button onclick="askCustomQuestion()">Ask</button>
+    </div>
+
+    <div id="response"></div>
+
+    <script src="test_api.js"></script>
+    <script>
+        // Override console.log to also display in the page
+        const oldLog = console.log;
+        console.log = function(...args) {
+            oldLog.apply(console, args);
+            const response = document.getElementById('response');
+            response.innerHTML += args.join(' ') + '\n';
+            response.scrollTop = response.scrollHeight; // Auto-scroll to bottom
+        };
+        
+        // Override console.error for error display
+        const oldError = console.error;
+        console.error = function(...args) {
+            oldError.apply(console, args);
+            const response = document.getElementById('response');
+            response.innerHTML += '<div class="error">' + args.join(' ') + '</div>\n';
+            response.scrollTop = response.scrollHeight; // Auto-scroll to bottom
+        };
+
+        // Function to clear the output area
+        function clearOutput() {
+            document.getElementById('response').innerHTML = '<div class="success">Output cleared</div>\n';
+        }
+
+        // Function to ask a custom question
+        async function askCustomQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                console.error('Please enter a question');
+                return;
+            }
+            
+            try {
+                console.log('Asking: ' + question);
+                const response = await fetch('http://localhost:5000/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        question: question
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('API Response received');
+                console.log('\nAnswer from AI:\n', data.answer);
+                console.log('\nCognitive Level:', data.cognitive_level, '-', data.cognitive_description);
+                console.log('Sentiment:', data.sentiment);
+                
+                if (data.chunks && data.chunks.length > 0) {
+                    console.log('\nSource Chunks:');
+                    data.chunks.forEach((chunk, i) => {
+                        console.log(`\nChunk ${i+1}:\n${chunk.substring(0, 150)}...`);
+                    });
+                }
+                
+                // Clear the input field
+                questionInput.value = '';
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Add event listener for Enter key on the input field
+        document.getElementById('questionInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                askCustomQuestion();
+            }
+        });
+
+        // Initial message
+        console.log('Dhamm AI Chatbot API Test Interface');
+        console.log('Click the buttons above to test different API endpoints');
+    </script>
+</body>
+</html>
+
